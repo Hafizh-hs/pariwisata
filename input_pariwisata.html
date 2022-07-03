@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pariwisata</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">Pariwisata</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="input_pariwisata.html">Input Pariwisata</a>
+                    </li>
+                </ul>
+            </div>
+            
+        </div>
+    </nav>
+
+
+    <div class="container">
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>Input Pariwisata</h5>
+            </div>
+            <div class="card-body">
+                <form action="">
+                    <div class="mb-3">
+                        <label for="">Nama Pariwisata</label>
+                        <input type="text" class="form-control" id="txtNama">
+                    </div>
+                    <div class="mb-3">
+                        <label for="">Rating</label>
+                        <input type="text" class="form-control" id="txtRating">
+                    </div>
+                    <div class="mb-3">
+                        <label for="">Tentang Pariwisata</label>
+                        <textarea class="form-control" name="" id="txtTentang" cols="30" rows="10"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="">Kota</label>
+                        <select class="form-select" name="" id="slctKota" multiple>
+                            <option value="medan">Medan</option>
+                            <option value="papua">Papua</option>
+                            <option value="jatim">Jawa Timur</option>
+                        </select>
+                    </div>
+                    <div class="mb-3 d-flex flex-row-reverse">
+                        <button class="btn btn-success" id="btnSimpan">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <table class="table mt-3">
+            <thead>
+                <tr>
+                    <th class="w-25">Nama Pariwisata</th>
+                    <th>Rating</th>
+                    <th>Tentang Pariwisata</th>
+                    <th>Kota</th>
+                    <th colspan="2">Action</th>
+                </tr>
+            </thead>
+            <tbody id="list-pariwisata">
+                
+            </tbody>
+        </table>
+    </div>
+
+
+    <script>
+        let pariwisata = [];
+        let isNew = true;
+
+        document.addEventListener("DOMContentLoaded",function(){
+            pariwisata = JSON.parse(localStorage.getItem("pariwisata"));
+
+            if(!pariwisata) pariwisata = [];
+
+            tampilListPariwisata();
+        });
+
+        function hapusWisata(nama){
+            const wisataIndex = pariwisata.findIndex(function(wisata){
+                return wisata.nama === nama
+            });
+            pariwisata.splice(wisataIndex,1);
+
+            localStorage.setItem("pariwisata",JSON.stringify(pariwisata));
+
+            tampilListPariwisata();
+        }
+
+        function ubahWisata(nama){
+            const wisata = pariwisata.find(function(wisata){
+                return wisata.nama === nama;
+            })
+
+           document.getElementById("txtNama").value = wisata.nama;
+           document.getElementById("txtRating").value = wisata.rating;
+           document.getElementById("txtTentang").value = wisata.tentang;
+           document.getElementById("slctKota").value = wisata.kota;
+
+           isNew = false;
+
+
+        }
+
+        function tampilListPariwisata(){
+            const listPariwisata = document.getElementById("list-pariwisata");
+
+            listPariwisata.innerHTML = "";
+
+            pariwisata.map(wisata => {
+                listPariwisata.innerHTML += `
+                <tr>
+                        <td>${wisata.nama}</td>
+                        <td>${wisata.rating}</td>
+                        <td>${wisata.tentang}</td>
+                        <td>${wisata.kota}</td>
+                        <td><button class="btn btn-warning" onclick="ubahWisata('${wisata.nama}')">Ubah</button></td>
+                        <td><button class="btn btn-danger" onClick="hapusWisata('${wisata.nama}')">Hapus</button></td>
+                    </tr>
+                    `
+            })
+        }
+
+        document.getElementById("btnSimpan")
+            .addEventListener("click", function(event){
+                event.preventDefault();
+
+                const nama = document.getElementById("txtNama");
+                const rating = document.getElementById("txtRating");
+                const tentang = document.getElementById("txtTentang");
+                const kota = document.getElementById("slctKota");
+
+                
+                if(isNew){
+                    pariwisata.push({
+                        nama: nama.value,
+                        rating: rating.value,
+                        tentang: tentang.value,
+                        kota: [...kota.options].filter(option => option.selected).map(option => option.value)
+                    });
+                }else{
+                    const wisataIndex = pariwisata.findIndex(function(wisata) {
+                        return wisata.nama === nama.value;
+                    });
+                    pariwisata[wisataIndex] = {
+                        ...pariwisata[wisataIndex],
+                        nama: nama.value,
+                        rating: rating.value,
+                        tentang: tentang.value,
+                        kota: [...kota.options].filter(option => option.selected).map(option => option.value)
+                    };
+
+                    isNew = true;
+                }
+
+                localStorage.setItem("pariwisata",JSON.stringify(pariwisata));
+
+                tampilListPariwisata();
+        })
+
+
+    </script>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+</body>
+</html>
